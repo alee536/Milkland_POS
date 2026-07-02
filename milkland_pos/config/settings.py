@@ -7,14 +7,9 @@ SECRET_KEY = 'django-insecure-milkland-pos-secret-key-change-in-production-2024'
 
 DEBUG = True
 
-# For Replit development - restrict in local production deployment
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.replit.dev',
-    'https://*.replit.app',
-    'https://*.sisko.replit.dev',
-    'https://*.repl.co',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
 ]
