@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Products{% endblock %}
+{% block navbar_title %}Products{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-box-seam me-2 text-gold"></i>Products</h1>
+  <div class="d-flex gap-2">
+    {% if user.is_staff %}
+    <a href="{% url 'products:add' %}" class="btn btn-gold btn-sm"><i class="bi bi-plus-circle me-1"></i>Add Product</a>
+    <a href="{% url 'products:category_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-tags me-1"></i>Categories</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-sm-4"><input type="text" name="q" class="form-control form-control-sm" placeholder="Search products..." value="{{ query }}"></div>
+      <div class="col-sm-2">
+        <select name="category" class="form-select form-select-sm">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+          <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:'s' %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-2">
+        <select name="status" class="form-select form-select-sm">
+          <option value="">All Status</option>
+          <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+          <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+      </div>
+      <div class="col-sm-auto">
+        <div class="form-check form-check-inline">
+          <input type="checkbox" name="low_stock" id="lowStock" class="form-check-input" {% if low_stock %}checked{% endif %} value="1">
+          <label for="lowStock" class="form-check-label" style="font-size:0.8rem;">Low Stock Only</label>
+        </div>
+      </div>
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-gold btn-sm">Filter</button>
+        <a href="{% url 'products:list' %}" class="btn btn-outline-secondary btn-sm ms-1">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Category</th>
+          <th>Unit</th>
+          <th>Purchase Price</th>
+          <th>Sale Price</th>
+          <th>Stock</th>
+          <th>Margin</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr {% if product.is_low_stock %}class="low-stock-row"{% endif %}>
+          <td>
+            <a href="{% url 'products:detail' product.pk %}" style="color:var(--text-dark);font-weight:600;font-size:0.85rem;text-decoration:none;">{{ product.name }}</a>
+            {% if product.is_low_stock %}<span class="badge badge-low-stock ms-1">Low Stock</span>{% endif %}
+          </td>
+          <td style="font-size:0.8rem;">{{ product.category.name|default:"-" }}</td>
+          <td style="font-size:0.8rem;">{{ product.unit_type }}</td>
+          <td style="font-size:0.82rem;">PKR {{ product.purchase_price|floatformat:2 }}</td>
+          <td style="font-size:0.82rem;font-weight:600;">PKR {{ product.sale_price|floatformat:2 }}</td>
+          <td style="font-size:0.82rem;font-weight:600;">{{ product.current_stock }}</td>
+          <td>
+            <span class="{% if product.profit_margin > 0 %}profit-margin-positive{% else %}profit-margin-negative{% endif %}" style="font-size:0.8rem;">
+              {{ product.profit_margin|floatformat:1 }}%
+            </span>
+          </td>
+          <td>
+            {% if product.is_active %}
+            <span class="badge" style="background:rgba(46,139,87,0.12);color:var(--success-green);font-size:0.7rem;">Active</span>
+            {% else %}
+            <span class="badge bg-secondary" style="font-size:0.7rem;">Inactive</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'products:detail' product.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;" title="View"><i class="bi bi-eye"></i></a>
+            {% if user.is_staff %}
+            <a href="{% url 'products:edit' product.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;" title="Edit"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'products:adjust_stock' product.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;" title="Adjust Stock"><i class="bi bi-sliders"></i></a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" class="text-center text-muted py-4">No products found. <a href="{% url 'products:add' %}">Add one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% with page_obj=products %}{% include 'partials/pagination.html' %}{% endwith %}
+{% endblock %}

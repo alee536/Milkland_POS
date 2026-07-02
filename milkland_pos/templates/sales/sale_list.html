@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Sales History{% endblock %}
+{% block navbar_title %}Sales History{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-receipt me-2 text-gold"></i>Sales History</h1>
+  <a href="{% url 'sales:pos' %}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle me-1"></i>New Sale</a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-sm-3"><input type="text" name="q" class="form-control form-control-sm" placeholder="Search invoice..." value="{{ query }}"></div>
+      <div class="col-sm-2">
+        <select name="sale_type" class="form-select form-select-sm">
+          <option value="">All Types</option>
+          <option value="Cash" {% if sale_type == 'Cash' %}selected{% endif %}>Cash</option>
+          <option value="Credit" {% if sale_type == 'Credit' %}selected{% endif %}>Credit</option>
+        </select>
+      </div>
+      <div class="col-sm-2"><input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}"></div>
+      <div class="col-sm-2"><input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}"></div>
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-gold btn-sm">Filter</button>
+        <a href="{% url 'sales:list' %}" class="btn btn-outline-secondary btn-sm ms-1">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Invoice</th>
+          <th>Date</th>
+          <th>Customer</th>
+          <th>Type</th>
+          <th>Total</th>
+          <th>Paid</th>
+          <th>Balance</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sale in sales %}
+        <tr>
+          <td><strong style="color:var(--accent-gold);">{{ sale.invoice_number }}</strong></td>
+          <td style="font-size:0.82rem;">{{ sale.sale_date }}</td>
+          <td style="font-size:0.82rem;">{{ sale.customer.name|default:"Walk-in" }}</td>
+          <td><span class="badge badge-{{ sale.sale_type|lower }} rounded-pill px-2" style="font-size:0.7rem;">{{ sale.sale_type }}</span></td>
+          <td style="font-weight:600;">PKR {{ sale.grand_total|floatformat:2 }}</td>
+          <td style="color:var(--success-green);font-weight:600;">PKR {{ sale.paid_amount|floatformat:2 }}</td>
+          <td style="color:{% if sale.balance_amount > 0 %}var(--danger-red){% else %}var(--success-green){% endif %};font-weight:600;">PKR {{ sale.balance_amount|floatformat:2 }}</td>
+          <td>
+            <a href="{% url 'sales:receipt' sale.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;" title="Receipt">
+              <i class="bi bi-printer"></i>
+            </a>
+            <a href="{% url 'sales:detail' sale.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;" title="View">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No sales found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% with page_obj=sales %}{% include 'partials/pagination.html' %}{% endwith %}
+{% endblock %}

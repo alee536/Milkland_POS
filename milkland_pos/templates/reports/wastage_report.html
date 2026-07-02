@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Wastage Report{% endblock %}
+{% block navbar_title %}Wastage Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-trash3 me-2 text-gold"></i>Wastage Report</h1>
+  <button onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print"><i class="bi bi-printer me-1"></i>Print</button>
+</div>
+
+<div class="card mb-3 no-print">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-sm-2"><input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}"></div>
+      <div class="col-sm-2"><input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}"></div>
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-gold btn-sm">Generate</button>
+        <a href="{% url 'reports:wastage' %}" class="btn btn-outline-secondary btn-sm ms-1">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2 text-center">
+    <div style="font-size:0.75rem;color:var(--text-light);">Total Estimated Loss</div>
+    <div style="font-size:1.4rem;font-weight:800;color:var(--danger-red);">PKR {{ total_loss|floatformat:2 }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0" style="font-size:0.82rem;">
+      <thead><tr><th>Date</th><th>Product</th><th>Quantity</th><th>Reason</th><th>Est. Loss</th><th>Notes</th></tr></thead>
+      <tbody>
+        {% for wastage in wastages %}
+        <tr>
+          <td>{{ wastage.wastage_date }}</td>
+          <td><strong>{{ wastage.product.name }}</strong></td>
+          <td>{{ wastage.quantity }} {{ wastage.product.unit_type }}</td>
+          <td>{{ wastage.reason }}</td>
+          <td style="color:var(--danger-red);font-weight:600;">PKR {{ wastage.estimated_loss_amount|floatformat:2 }}</td>
+          <td>{{ wastage.notes|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No wastage for selected period.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

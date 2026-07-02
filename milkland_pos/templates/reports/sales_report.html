@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Sales Report{% endblock %}
+{% block navbar_title %}Sales Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-graph-up me-2 text-gold"></i>Sales Report</h1>
+  <div class="d-flex gap-2">
+    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print"><i class="bi bi-printer me-1"></i>Print</button>
+    <a href="?{{ request.GET.urlencode }}&export=1" class="btn btn-gold btn-sm no-print"><i class="bi bi-download me-1"></i>Export CSV</a>
+  </div>
+</div>
+
+<div class="card mb-3 no-print">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-sm-2"><input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}" placeholder="From"></div>
+      <div class="col-sm-2"><input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}" placeholder="To"></div>
+      <div class="col-sm-2">
+        <select name="sale_type" class="form-select form-select-sm">
+          <option value="">All Types</option>
+          <option value="Cash" {% if sale_type == 'Cash' %}selected{% endif %}>Cash</option>
+          <option value="Credit" {% if sale_type == 'Credit' %}selected{% endif %}>Credit</option>
+        </select>
+      </div>
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-gold btn-sm">Generate Report</button>
+        <a href="{% url 'reports:sales' %}" class="btn btn-outline-secondary btn-sm ms-1">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if totals.count %}
+<div class="row g-3 mb-3">
+  <div class="col-sm-3"><div class="stat-card stat-gold"><div class="stat-value">{{ totals.count }}</div><div class="stat-label">Total Sales</div></div></div>
+  <div class="col-sm-3"><div class="stat-card stat-green"><div class="stat-value">{{ totals.total_sales|floatformat:0|default:0 }}</div><div class="stat-label">Total Revenue (PKR)</div></div></div>
+  <div class="col-sm-3"><div class="stat-card stat-blue"><div class="stat-value">{{ totals.total_paid|floatformat:0|default:0 }}</div><div class="stat-label">Total Paid (PKR)</div></div></div>
+  <div class="col-sm-3"><div class="stat-card stat-red"><div class="stat-value">{{ totals.total_balance|floatformat:0|default:0 }}</div><div class="stat-label">Total Balance (PKR)</div></div></div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0" style="font-size:0.82rem;">
+      <thead><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Cashier</th><th>Type</th><th class="text-end">Total</th><th class="text-end">Paid</th><th class="text-end">Balance</th></tr></thead>
+      <tbody>
+        {% for sale in sales %}
+        <tr>
+          <td><a href="{% url 'sales:detail' sale.pk %}" style="color:var(--accent-gold);">{{ sale.invoice_number }}</a></td>
+          <td>{{ sale.sale_date }}</td>
+          <td>{{ sale.customer.name|default:"Walk-in" }}</td>
+          <td>{{ sale.cashier.username|default:"-" }}</td>
+          <td><span class="badge badge-{{ sale.sale_type|lower }}" style="font-size:0.7rem;">{{ sale.sale_type }}</span></td>
+          <td class="text-end font-weight-bold">PKR {{ sale.grand_total|floatformat:2 }}</td>
+          <td class="text-end" style="color:var(--success-green);">PKR {{ sale.paid_amount|floatformat:2 }}</td>
+          <td class="text-end" style="color:var(--danger-red);">PKR {{ sale.balance_amount|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No sales found for selected filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Purchases{% endblock %}
+{% block navbar_title %}Purchases{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-truck me-2 text-gold"></i>Purchases</h1>
+  <a href="{% url 'purchases:add' %}" class="btn btn-gold btn-sm"><i class="bi bi-plus-circle me-1"></i>Add Purchase</a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-sm-4"><input type="text" name="q" class="form-control form-control-sm" placeholder="Search supplier or invoice..." value="{{ query }}"></div>
+      <div class="col-sm-3">
+        <select name="status" class="form-select form-select-sm">
+          <option value="">All Status</option>
+          <option value="Paid" {% if status == 'Paid' %}selected{% endif %}>Paid</option>
+          <option value="Partial" {% if status == 'Partial' %}selected{% endif %}>Partial</option>
+          <option value="Unpaid" {% if status == 'Unpaid' %}selected{% endif %}>Unpaid</option>
+        </select>
+      </div>
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-gold btn-sm">Filter</button>
+        <a href="{% url 'purchases:list' %}" class="btn btn-outline-secondary btn-sm ms-1">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Invoice</th><th>Supplier</th><th>Date</th><th>Total</th><th>Paid</th><th>Remaining</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for purchase in purchases %}
+        <tr>
+          <td><strong style="color:var(--accent-gold);">{{ purchase.invoice_number }}</strong></td>
+          <td style="font-size:0.82rem;">{{ purchase.supplier.name }}</td>
+          <td style="font-size:0.82rem;">{{ purchase.purchase_date }}</td>
+          <td style="font-weight:600;">PKR {{ purchase.total_amount|floatformat:2 }}</td>
+          <td style="color:var(--success-green);font-weight:600;">PKR {{ purchase.paid_amount|floatformat:2 }}</td>
+          <td style="color:var(--danger-red);font-weight:600;">PKR {{ purchase.remaining_amount|floatformat:2 }}</td>
+          <td><span class="badge badge-{{ purchase.payment_status|lower }} rounded-pill px-2" style="font-size:0.7rem;">{{ purchase.payment_status }}</span></td>
+          <td><a href="{% url 'purchases:detail' purchase.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;"><i class="bi bi-eye"></i></a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No purchases yet. <a href="{% url 'purchases:add' %}">Add one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% with page_obj=purchases %}{% include 'partials/pagination.html' %}{% endwith %}
+{% endblock %}

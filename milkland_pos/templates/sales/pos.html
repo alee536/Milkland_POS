@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load app_filters %}
+{% block title %}POS - New Sale{% endblock %}
+{% block navbar_title %}POS - New Sale{% endblock %}
+
+{% block extra_css %}
+<style>
+  .main-content { padding: 12px 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'partials/messages.html' %}
+
+<div class="pos-layout">
+  <!-- Products Panel -->
+  <div class="pos-products-panel">
+    <div class="pos-products-header">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <h6 class="mb-0 fw-bold"><i class="bi bi-grid me-2 text-gold"></i>Products</h6>
+        <span class="badge bg-secondary rounded-pill ms-auto" style="font-size:0.7rem;">{{ products|length }} items</span>
+      </div>
+      <input type="text" id="productSearch" class="form-control form-control-sm" placeholder="🔍 Search products...">
+      <!-- Category Pills -->
+      <div class="category-pills mt-2">
+        <button class="pill-btn active" id="pillAll" data-cat="" onclick="POS.filterByCategory('')">All</button>
+        {% for category in categories %}
+        {% if category %}
+        <button class="pill-btn" data-cat="{{ category.name }}" onclick="POS.filterByCategory('{{ category.name }}')">{{ category.name }}</button>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="pos-products-grid" id="productsGrid">
+      {% for product in products %}
+      <div class="product-card {% if product.current_stock <= 0 %}out-of-stock{% endif %}"
+           data-name="{{ product.name }}"
+           data-category="{{ product.category.name|default:'' }}"
+           {% if product.current_stock > 0 %}
+           onclick="POS.addProduct({{ product.pk }}, '{{ product.name|escapejs }}', '{{ product.sale_price }}', '{{ product.current_stock }}', '{{ product.unit_type }}')"
+           {% endif %}>
+        <div class="pc-category">{{ product.category.name|default:"Uncategorized" }}</div>
+        <div class="pc-name">{{ product.name }}</div>
+        <div class="pc-price">PKR {{ product.sale_price|floatformat:0 }}</div>
+        <div class="pc-stock">
+          {% if product.current_stock <= 0 %}
+          <span class="badge badge-low-stock">Out of Stock</span>
+          {% elif product.is_low_stock %}
+          <span style="color:#F97316;">{{ product.current_stock }} {{ product.unit_type }}</span>
+          {% else %}
+          {{ product.current_stock }} {{ product.unit_type }}
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-box-seam" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+        No products available. <a href="{% url 'core:dashboard' %}">Run seed_data</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Current Sale Panel -->
+  <div class="pos-sale-panel">
+    <div class="sale-panel-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5><i class="bi bi-cart3 me-2"></i>Current Sale</h5>
+        <button class="btn btn-sm" style="background:#F3F4F6;color:#4B5563;font-size:0.75rem;border:1px solid #E5E7EB;" onclick="location.reload()">
+          <i class="bi bi-arrow-counterclockwise"></i> Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Cart Items -->
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-empty" id="cartEmpty">
+      <i class="bi bi-cart3"></i>
+      <div style="font-size:0.85rem;">Cart is empty</div>
+      <div style="font-size:0.75rem;margin-top:4px;">Click on a product to add it</div>
+    </div>
+
+    <!-- Totals -->
+    <div class="sale-totals">
+      <div class="total-row"><span>Subtotal</span><span id="subtotalDisplay">PKR 0.00</span></div>
+      <div class="total-row"><span>Discount Amount</span><span id="discAmountDisplay">PKR 0.00</span></div>
+      <div class="total-row grand"><span>Total Payable</span><span class="value" id="grandTotalDisplay">PKR 0.00</span></div>
+      <div class="total-row"><span>Paid Amount</span><span id="paidDisplay">PKR 0.00</span></div>
+      <div class="total-row" id="balanceRow" style="color:#DC3545;font-weight:600;"><span>Remaining Balance</span><span id="balanceDisplay">PKR 0.00</span></div>
+      <div class="total-row" id="changeRow" style="color:#2E8B57;font-weight:600;display:none;"><span>Change</span><span id="changeDisplay">PKR 0.00</span></div>
+    </div>
+
+    <!-- Sale Form -->
+    <form method="post" id="saleForm" action="{% url 'sales:pos' %}">
+      {% csrf_token %}
+      <input type="hidden" name="items_data" id="itemsData">
+
+      <div class="sale-form-fields">
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="mb-1">Sale Type</label>
+            <select class="form-select form-select-sm" name="sale_type" id="saleType">
+              <option value="Cash">💵 Cash</option>
+              <option value="Credit">📋 Credit</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="mb-1">Discount (%)</label>
+            <input type="number" class="form-control form-control-sm" name="discount_percentage" id="discountPct" value="0" min="0" max="100" step="0.01" placeholder="0">
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="mb-1">Customer (Optional for Cash)</label>
+          <select class="form-select form-select-sm" name="customer_id" id="customerId">
+            <option value="">-- Walk-in Customer --</option>
+            {% for customer in customers %}
+            <option value="{{ customer.pk }}">{{ customer.name }} {% if customer.current_balance > 0 %}(Balance: PKR {{ customer.current_balance|floatformat:0 }}){% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-2">
+          <label class="mb-1">Paid Amount / Cash Received</label>
+          <input type="number" class="form-control form-control-sm" name="paid_amount" id="paidAmount" value="0" min="0" step="0.01" placeholder="Enter paid amount in PKR">
+        </div>
+
+        <div class="mb-2">
+          <label class="mb-1">Notes (optional)</label>
+          <input type="text" class="form-control form-control-sm" name="notes" placeholder="e.g. Home delivery, special order...">
+        </div>
+      </div>
+
+      <div class="px-3 pb-3">
+        <button type="submit" class="btn-complete-sale">
+          <i class="bi bi-check-circle me-2"></i>Complete Sale
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

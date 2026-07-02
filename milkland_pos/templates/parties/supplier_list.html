@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Suppliers{% endblock %}
+{% block navbar_title %}Suppliers{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-building me-2 text-gold"></i>Suppliers</h1>
+  <a href="{% url 'parties:supplier_add' %}" class="btn btn-gold btn-sm"><i class="bi bi-plus-circle me-1"></i>Add Supplier</a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-sm-4"><input type="text" name="q" class="form-control form-control-sm" placeholder="Search by name or phone..." value="{{ query }}"></div>
+      <div class="col-sm-auto">
+        <div class="form-check form-check-inline">
+          <input type="checkbox" name="payable" id="hasPayable" class="form-check-input" {% if payable %}checked{% endif %} value="1">
+          <label for="hasPayable" class="form-check-label" style="font-size:0.8rem;">Has Payable Balance</label>
+        </div>
+      </div>
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-gold btn-sm">Filter</button>
+        <a href="{% url 'parties:supplier_list' %}" class="btn btn-outline-secondary btn-sm ms-1">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Name</th><th>Phone</th><th>Payable Balance</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for supplier in suppliers %}
+        <tr>
+          <td><a href="{% url 'parties:supplier_detail' supplier.pk %}" style="color:var(--text-dark);font-weight:600;text-decoration:none;">{{ supplier.name }}</a></td>
+          <td style="font-size:0.82rem;">{{ supplier.phone|default:"-" }}</td>
+          <td>
+            {% if supplier.current_balance > 0 %}
+            <strong style="color:var(--danger-red);">PKR {{ supplier.current_balance|floatformat:2 }}</strong>
+            {% else %}
+            <span style="color:var(--success-green);font-weight:600;">PKR 0.00</span>
+            {% endif %}
+          </td>
+          <td>{% if supplier.is_active %}<span class="badge" style="background:rgba(46,139,87,0.12);color:var(--success-green);font-size:0.7rem;">Active</span>{% else %}<span class="badge bg-secondary" style="font-size:0.7rem;">Inactive</span>{% endif %}</td>
+          <td>
+            <a href="{% url 'parties:supplier_detail' supplier.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;" title="View"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'parties:supplier_ledger' supplier.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;" title="Ledger"><i class="bi bi-journal-text"></i></a>
+            <a href="{% url 'parties:supplier_edit' supplier.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;" title="Edit"><i class="bi bi-pencil"></i></a>
+            {% if supplier.current_balance > 0 %}
+            <a href="{% url 'finance:supplier_payment' %}?supplier={{ supplier.pk }}" class="btn btn-sm btn-success" style="font-size:0.72rem;" title="Make Payment"><i class="bi bi-send-check"></i></a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-4">No suppliers. <a href="{% url 'parties:supplier_add' %}">Add one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% with page_obj=suppliers %}{% include 'partials/pagination.html' %}{% endwith %}
+{% endblock %}

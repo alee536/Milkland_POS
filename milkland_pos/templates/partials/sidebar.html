@@ -1,0 +1,75 @@
+{% load static %}
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <img src="{% static 'images/logo.png' %}" alt="Milk Land Logo">
+    <span class="brand-name">MILK LAND</span>
+    <span class="brand-tagline">A Satluj Dairies Venture</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="sidebar-section">Main</div>
+    <a href="{% url 'core:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="{% url 'sales:pos' %}" class="{% if request.resolver_match.url_name == 'pos' %}active{% endif %}">
+      <i class="bi bi-cash-register"></i> POS / New Sale
+    </a>
+
+    <div class="sidebar-section">Inventory</div>
+    <a href="{% url 'products:list' %}" class="{% if 'products' in request.resolver_match.namespace %}active{% endif %}">
+      <i class="bi bi-box-seam"></i> Products
+    </a>
+    <a href="{% url 'purchases:list' %}" class="{% if 'purchases' in request.resolver_match.namespace %}active{% endif %}">
+      <i class="bi bi-truck"></i> Purchases
+    </a>
+
+    <div class="sidebar-section">Parties</div>
+    <a href="{% url 'parties:customer_list' %}" class="{% if request.resolver_match.url_name == 'customer_list' or request.resolver_match.url_name == 'customer_detail' or request.resolver_match.url_name == 'customer_ledger' %}active{% endif %}">
+      <i class="bi bi-people"></i> Customers
+    </a>
+    <a href="{% url 'parties:supplier_list' %}" class="{% if request.resolver_match.url_name == 'supplier_list' or request.resolver_match.url_name == 'supplier_detail' or request.resolver_match.url_name == 'supplier_ledger' %}active{% endif %}">
+      <i class="bi bi-building"></i> Suppliers
+    </a>
+
+    <div class="sidebar-section">Finance</div>
+    <a href="{% url 'sales:list' %}" class="{% if request.resolver_match.url_name == 'list' and request.resolver_match.namespace == 'sales' %}active{% endif %}">
+      <i class="bi bi-receipt"></i> Sales History
+    </a>
+    <a href="{% url 'finance:customer_payment' %}" class="{% if request.resolver_match.url_name == 'customer_payment' %}active{% endif %}">
+      <i class="bi bi-wallet2"></i> Customer Payment
+    </a>
+    <a href="{% url 'finance:supplier_payment' %}" class="{% if request.resolver_match.url_name == 'supplier_payment' %}active{% endif %}">
+      <i class="bi bi-send-check"></i> Supplier Payment
+    </a>
+    <a href="{% url 'finance:expense_list' %}" class="{% if 'expense' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-cash-coin"></i> Expenses
+    </a>
+    <a href="{% url 'finance:wastage_list' %}" class="{% if 'wastage' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-trash3"></i> Wastage
+    </a>
+
+    <div class="sidebar-section">Reports</div>
+    <a href="{% url 'reports:dashboard' %}" class="{% if 'reports' in request.resolver_match.namespace %}active{% endif %}">
+      <i class="bi bi-graph-up-arrow"></i> Reports
+    </a>
+
+    {% if user.is_staff %}
+    <div class="sidebar-section">Admin</div>
+    <a href="{% url 'products:category_list' %}">
+      <i class="bi bi-tags"></i> Categories
+    </a>
+    <a href="{% url 'core:business_settings' %}">
+      <i class="bi bi-gear"></i> Business Settings
+    </a>
+    <a href="{% url 'admin:index' %}">
+      <i class="bi bi-shield-lock"></i> Django Admin
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="{% url 'accounts:logout' %}">
+      <i class="bi bi-box-arrow-left"></i> Logout
+    </a>
+  </div>
+</aside>

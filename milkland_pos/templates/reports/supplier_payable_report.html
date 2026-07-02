@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Supplier Payable Report{% endblock %}
+{% block navbar_title %}Supplier Payable Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-building me-2 text-gold"></i>Supplier Payable Report</h1>
+  <button onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print"><i class="bi bi-printer me-1"></i>Print</button>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2 text-center">
+    <div style="font-size:0.75rem;color:var(--text-light);">Total Payable to Suppliers</div>
+    <div style="font-size:1.4rem;font-weight:800;color:var(--danger-red);">PKR {{ total|floatformat:2 }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>#</th><th>Supplier</th><th>Phone</th><th>Payable Balance</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for supplier in suppliers %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><a href="{% url 'parties:supplier_detail' supplier.pk %}" style="font-weight:600;color:var(--text-dark);">{{ supplier.name }}</a></td>
+          <td style="font-size:0.82rem;">{{ supplier.phone|default:"-" }}</td>
+          <td><strong style="color:var(--danger-red);">PKR {{ supplier.current_balance|floatformat:2 }}</strong></td>
+          <td>
+            <a href="{% url 'parties:supplier_ledger' supplier.pk %}" class="btn btn-sm btn-outline-secondary no-print" style="font-size:0.72rem;"><i class="bi bi-journal-text me-1"></i>Ledger</a>
+            <a href="{% url 'finance:supplier_payment' %}?supplier={{ supplier.pk }}" class="btn btn-sm btn-success no-print" style="font-size:0.72rem;"><i class="bi bi-send-check me-1"></i>Pay</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-4">No outstanding payables. 🎉</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

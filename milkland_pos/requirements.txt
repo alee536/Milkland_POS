@@ -1,0 +1,4 @@
+Django
+waitress
+whitenoise
+Pillow

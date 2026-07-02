@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Stock Report{% endblock %}
+{% block navbar_title %}Stock Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-box-seam me-2 text-gold"></i>Stock Report</h1>
+  <div class="d-flex gap-2">
+    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print"><i class="bi bi-printer me-1"></i>Print</button>
+  </div>
+</div>
+
+<div class="card mb-3 no-print">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-sm-auto">
+        <div class="form-check form-check-inline">
+          <input type="checkbox" name="low_stock" id="lowStockFilter" class="form-check-input" {% if low_stock_only %}checked{% endif %} value="1">
+          <label for="lowStockFilter" class="form-check-label" style="font-size:0.8rem;">Low Stock Only</label>
+        </div>
+      </div>
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-gold btn-sm">Filter</button>
+        <a href="{% url 'reports:stock' %}" class="btn btn-outline-secondary btn-sm ms-1">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2 text-center">
+    <div style="font-size:0.75rem;color:var(--text-light);">Total Stock Value</div>
+    <div style="font-size:1.4rem;font-weight:800;color:var(--accent-gold);">PKR {{ total_value|floatformat:2 }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0" style="font-size:0.82rem;">
+      <thead><tr><th>Product</th><th>Category</th><th>Unit</th><th>Purchase Price</th><th>Sale Price</th><th>Current Stock</th><th>Stock Value</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for product in products %}
+        <tr {% if product.is_low_stock %}class="low-stock-row"{% endif %}>
+          <td><strong>{{ product.name }}</strong>{% if product.is_low_stock %} <span class="badge badge-low-stock ms-1">Low</span>{% endif %}</td>
+          <td>{{ product.category.name|default:"-" }}</td>
+          <td>{{ product.unit_type }}</td>
+          <td>PKR {{ product.purchase_price|floatformat:2 }}</td>
+          <td>PKR {{ product.sale_price|floatformat:2 }}</td>
+          <td><strong {% if product.is_low_stock %}style="color:var(--danger-red);"{% endif %}>{{ product.current_stock }}</strong></td>
+          <td>PKR {{ product.current_stock|multiply:product.purchase_price|floatformat:2 }}</td>
+          <td>{% if product.is_active %}<span class="badge" style="background:rgba(46,139,87,0.12);color:var(--success-green);font-size:0.7rem;">Active</span>{% else %}<span class="badge bg-secondary" style="font-size:0.7rem;">Inactive</span>{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No products found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

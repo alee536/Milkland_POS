@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Categories{% endblock %}
+{% block navbar_title %}Product Categories{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-tags me-2 text-gold"></i>Categories</h1>
+  <a href="{% url 'products:category_add' %}" class="btn btn-gold btn-sm"><i class="bi bi-plus-circle me-1"></i>Add Category</a>
+</div>
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Name</th><th>Description</th><th>Products</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td><strong>{{ cat.name }}</strong></td>
+          <td style="font-size:0.82rem;">{{ cat.description|truncatechars:50|default:"-" }}</td>
+          <td>{{ cat.products.count }}</td>
+          <td>{% if cat.is_active %}<span class="badge" style="background:rgba(46,139,87,0.12);color:var(--success-green);">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+          <td><a href="{% url 'products:category_edit' cat.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;"><i class="bi bi-pencil"></i></a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-4">No categories. <a href="{% url 'products:category_add' %}">Add one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

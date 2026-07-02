@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Expense Report{% endblock %}
+{% block navbar_title %}Expense Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-cash-coin me-2 text-gold"></i>Expense Report</h1>
+  <button onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print"><i class="bi bi-printer me-1"></i>Print</button>
+</div>
+
+<div class="card mb-3 no-print">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-sm-2"><input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}"></div>
+      <div class="col-sm-2"><input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}"></div>
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-gold btn-sm">Generate</button>
+        <a href="{% url 'reports:expenses' %}" class="btn btn-outline-secondary btn-sm ms-1">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2 text-center">
+    <div style="font-size:0.75rem;color:var(--text-light);">Total Expenses</div>
+    <div style="font-size:1.4rem;font-weight:800;color:var(--danger-red);">PKR {{ total|floatformat:2 }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0" style="font-size:0.82rem;">
+      <thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Description</th><th>Added By</th></tr></thead>
+      <tbody>
+        {% for expense in expenses %}
+        <tr>
+          <td>{{ expense.expense_date }}</td>
+          <td><strong>{{ expense.category }}</strong></td>
+          <td style="color:var(--danger-red);font-weight:600;">PKR {{ expense.amount|floatformat:2 }}</td>
+          <td>{{ expense.description|default:"-" }}</td>
+          <td>{{ expense.added_by.username|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-4">No expenses for selected period.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

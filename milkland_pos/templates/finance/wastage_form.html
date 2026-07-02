@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Add Wastage{% endblock %}
+{% block navbar_title %}Record Wastage{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-trash3 me-2 text-gold"></i>Record Wastage</h1>
+  <a href="{% url 'finance:wastage_list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Back</a>
+</div>
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label">{{ field.label }} {% if field.field.required %}<span class="text-danger">*</span>{% endif %}</label>
+            {{ field }}
+            {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+          </div>
+          {% endfor %}
+          <div class="alert alert-warning py-2" style="font-size:0.82rem;">
+            <i class="bi bi-exclamation-triangle me-1"></i>Wastage will decrease the product's current stock. Estimated loss is calculated from purchase price.
+          </div>
+          <button type="submit" class="btn btn-gold"><i class="bi bi-check-circle me-1"></i>Record Wastage</button>
+          <a href="{% url 'finance:wastage_list' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

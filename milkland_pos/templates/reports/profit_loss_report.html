@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Profit & Loss Report{% endblock %}
+{% block navbar_title %}Profit & Loss Report{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-bar-chart-line me-2 text-gold"></i>Profit & Loss Report</h1>
+  <button onclick="window.print()" class="btn btn-outline-secondary btn-sm no-print"><i class="bi bi-printer me-1"></i>Print</button>
+</div>
+
+<div class="card mb-3 no-print">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-sm-2"><label class="form-label mb-0" style="font-size:0.8rem;">From</label><input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}"></div>
+      <div class="col-sm-2"><label class="form-label mb-0" style="font-size:0.8rem;">To</label><input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}"></div>
+      <div class="col-sm-auto align-self-end">
+        <button type="submit" class="btn btn-gold btn-sm">Generate Report</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header text-center">
+        <h6 style="font-size:0.9rem;">Profit & Loss Summary</h6>
+        <div style="font-size:0.78rem;color:var(--text-light);">{{ date_from }} to {{ date_to }}</div>
+      </div>
+      <div class="card-body">
+        <table class="table table-sm">
+          <tbody>
+            <tr style="background:var(--soft-cream);">
+              <td><strong>Total Revenue (Sales)</strong></td>
+              <td class="text-end"><strong style="color:var(--success-green);">PKR {{ total_revenue|floatformat:2 }}</strong></td>
+            </tr>
+            <tr>
+              <td>Cost of Goods Sold (COGS)</td>
+              <td class="text-end" style="color:var(--danger-red);">- PKR {{ cogs|floatformat:2 }}</td>
+            </tr>
+            <tr style="background:var(--soft-cream);">
+              <td><strong>Gross Profit</strong></td>
+              <td class="text-end"><strong>PKR {{ gross_profit|floatformat:2 }}</strong></td>
+            </tr>
+            <tr>
+              <td>Total Expenses</td>
+              <td class="text-end" style="color:var(--danger-red);">- PKR {{ total_expenses|floatformat:2 }}</td>
+            </tr>
+            <tr>
+              <td>Wastage Loss</td>
+              <td class="text-end" style="color:var(--danger-red);">- PKR {{ total_wastage_loss|floatformat:2 }}</td>
+            </tr>
+            <tr style="background:{% if net_profit >= 0 %}rgba(46,139,87,0.08){% else %}rgba(220,53,69,0.08){% endif %};">
+              <td><strong style="font-size:1rem;">Net Profit / Loss</strong></td>
+              <td class="text-end"><strong style="font-size:1.1rem;color:{% if net_profit >= 0 %}var(--success-green){% else %}var(--danger-red){% endif %};">PKR {{ net_profit|floatformat:2 }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="row g-2 mt-2">
+          <div class="col-6"><div class="stat-card stat-gold"><div class="stat-value" style="font-size:1.1rem;">{{ sales_count }}</div><div class="stat-label">Total Sales</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

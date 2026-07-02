@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Expenses{% endblock %}
+{% block navbar_title %}Expenses{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-cash-coin me-2 text-gold"></i>Expenses</h1>
+  <a href="{% url 'finance:expense_add' %}" class="btn btn-gold btn-sm"><i class="bi bi-plus-circle me-1"></i>Add Expense</a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-sm-3"><input type="text" name="q" class="form-control form-control-sm" placeholder="Search description..." value="{{ query }}"></div>
+      <div class="col-sm-2"><input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}"></div>
+      <div class="col-sm-2"><input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}"></div>
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-gold btn-sm">Filter</button>
+        <a href="{% url 'finance:expense_list' %}" class="btn btn-outline-secondary btn-sm ms-1">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Description</th><th>Added By</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for expense in expenses %}
+        <tr>
+          <td style="font-size:0.82rem;">{{ expense.expense_date }}</td>
+          <td style="font-size:0.82rem;"><strong>{{ expense.category }}</strong></td>
+          <td style="font-weight:700;color:var(--danger-red);">PKR {{ expense.amount|floatformat:2 }}</td>
+          <td style="font-size:0.82rem;">{{ expense.description|truncatechars:40|default:"-" }}</td>
+          <td style="font-size:0.75rem;color:var(--text-light);">{{ expense.added_by.username|default:"-" }}</td>
+          <td>
+            <a href="{% url 'finance:expense_edit' expense.pk %}" class="btn btn-sm btn-outline-secondary" style="font-size:0.72rem;"><i class="bi bi-pencil"></i></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No expenses found. <a href="{% url 'finance:expense_add' %}">Add one</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% with page_obj=expenses %}{% include 'partials/pagination.html' %}{% endwith %}
+{% endblock %}

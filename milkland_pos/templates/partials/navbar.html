@@ -1,0 +1,22 @@
+{% load static %}
+<header class="top-navbar">
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn btn-sm d-lg-none" id="sidebarToggle" style="border:none;background:none;font-size:1.3rem;">
+      <i class="bi bi-list"></i>
+    </button>
+    <span class="page-title">{% block navbar_title %}MILK LAND POS{% endblock %}</span>
+  </div>
+
+  <div class="navbar-right">
+    <a href="{% url 'sales:pos' %}" class="btn btn-sm btn-gold rounded-pill px-3">
+      <i class="bi bi-plus-circle me-1"></i> New Sale
+    </a>
+    <div class="navbar-user">
+      <div class="user-avatar">{{ user.username|first|upper }}</div>
+      <div>
+        <div style="font-size:0.82rem;font-weight:600;">{{ user.get_full_name|default:user.username }}</div>
+        <div style="font-size:0.7rem;color:#9CA3AF;">{% if user.is_staff %}Admin{% else %}Sales Staff{% endif %}</div>
+      </div>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load app_filters %}
+{% block title %}Sale {{ sale.invoice_number }}{% endblock %}
+{% block navbar_title %}Sale Detail{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="bi bi-receipt me-2 text-gold"></i>Sale #{{ sale.invoice_number }}</h1>
+  <div class="d-flex gap-2">
+    <a href="{% url 'sales:receipt' sale.pk %}" class="btn btn-gold btn-sm"><i class="bi bi-printer me-1"></i>Print Receipt</a>
+    <a href="{% url 'sales:list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i>Back</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header"><h6>Sale Information</h6></div>
+      <div class="card-body">
+        <table class="table table-sm mb-0" style="font-size:0.85rem;">
+          <tr><td class="text-muted">Invoice</td><td><strong>{{ sale.invoice_number }}</strong></td></tr>
+          <tr><td class="text-muted">Date</td><td>{{ sale.sale_date }}</td></tr>
+          <tr><td class="text-muted">Customer</td><td>{{ sale.customer.name|default:"Walk-in Customer" }}</td></tr>
+          <tr><td class="text-muted">Sale Type</td><td><span class="badge badge-{{ sale.sale_type|lower }}">{{ sale.sale_type }}</span></td></tr>
+          <tr><td class="text-muted">Cashier</td><td>{{ sale.cashier.get_full_name|default:sale.cashier.username }}</td></tr>
+          <tr><td class="text-muted">Subtotal</td><td>PKR {{ sale.total_amount|floatformat:2 }}</td></tr>
+          <tr><td class="text-muted">Discount</td><td>{{ sale.discount_percentage }}% = PKR {{ sale.discount_amount|floatformat:2 }}</td></tr>
+          <tr><td class="text-muted">Grand Total</td><td><strong>PKR {{ sale.grand_total|floatformat:2 }}</strong></td></tr>
+          <tr><td class="text-muted">Paid</td><td style="color:var(--success-green);font-weight:600;">PKR {{ sale.paid_amount|floatformat:2 }}</td></tr>
+          <tr><td class="text-muted">Balance</td><td style="color:var(--danger-red);font-weight:600;">PKR {{ sale.balance_amount|floatformat:2 }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header"><h6>Items Sold</h6></div>
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td style="font-size:0.8rem;">{{ forloop.counter }}</td>
+              <td style="font-size:0.85rem;">{{ item.product.name }}</td>
+              <td>{{ item.quantity }} {{ item.product.unit_type }}</td>
+              <td>PKR {{ item.sale_rate|floatformat:2 }}</td>
+              <td><strong>PKR {{ item.line_total|floatformat:2 }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

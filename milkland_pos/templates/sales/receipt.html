@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load app_filters %}
+{% block title %}Receipt - {{ sale.invoice_number }}{% endblock %}
+{% block navbar_title %}Sale Receipt{% endblock %}
+
+{% block content %}
+<div class="page-header no-print">
+  <h1><i class="bi bi-receipt me-2 text-gold"></i>Sale Receipt</h1>
+  <div class="d-flex gap-2">
+    <button onclick="window.print()" class="btn btn-gold btn-sm">
+      <i class="bi bi-printer me-1"></i>Print Receipt
+    </button>
+    <a href="{% url 'sales:pos' %}" class="btn btn-success btn-sm">
+      <i class="bi bi-plus-circle me-1"></i>New Sale
+    </a>
+    <a href="{% url 'sales:list' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-list me-1"></i>All Sales
+    </a>
+  </div>
+</div>
+
+<div class="receipt-wrapper">
+  <!-- Receipt Header -->
+  <div class="receipt-header">
+    <img src="{% static 'images/logo.png' %}" alt="Milk Land" class="receipt-logo">
+    <div class="receipt-shop-name">MILK LAND</div>
+    <div class="receipt-tagline">A Satluj Dairies Venture</div>
+    <div style="font-size:0.72rem;color:#9CA3AF;margin-top:4px;">
+      <i class="bi bi-stars me-1 text-gold"></i>Free Home Delivery<br>
+      Commercial Market, New City, Bahawalnagar<br>
+      +923215307273
+    </div>
+  </div>
+
+  <!-- Sale Info -->
+  <div style="background:var(--soft-cream);border-radius:6px;padding:10px;margin-bottom:12px;">
+    <div class="receipt-info-row"><span class="label">Invoice #</span><span style="font-weight:700;">{{ sale.invoice_number }}</span></div>
+    <div class="receipt-info-row"><span class="label">Date</span><span>{{ sale.sale_date }}</span></div>
+    <div class="receipt-info-row"><span class="label">Time</span><span>{{ sale.created_at|date:"h:i A" }}</span></div>
+    <div class="receipt-info-row"><span class="label">Cashier</span><span>{{ sale.cashier.get_full_name|default:sale.cashier.username }}</span></div>
+    <div class="receipt-info-row"><span class="label">Customer</span><span style="font-weight:600;">{{ sale.customer.name|default:"Walk-in Customer" }}</span></div>
+    <div class="receipt-info-row"><span class="label">Sale Type</span><span>{{ sale.sale_type }}</span></div>
+  </div>
+
+  <!-- Items -->
+  <table class="receipt-table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th class="text-center">Qty</th>
+        <th class="text-right">Rate</th>
+        <th class="text-right">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.product.name }}</td>
+        <td class="text-center">{{ item.quantity }} {{ item.product.unit_type }}</td>
+        <td class="text-right">{{ item.sale_rate|floatformat:2 }}</td>
+        <td class="text-right" style="font-weight:600;">{{ item.line_total|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Totals -->
+  <div class="receipt-totals">
+    <div class="receipt-total-row"><span>Subtotal</span><span>PKR {{ sale.total_amount|floatformat:2 }}</span></div>
+    {% if sale.discount_percentage > 0 %}
+    <div class="receipt-total-row"><span>Discount ({{ sale.discount_percentage }}%)</span><span>- PKR {{ sale.discount_amount|floatformat:2 }}</span></div>
+    {% endif %}
+    <div class="receipt-total-row grand"><span>Total After Discount</span><span>PKR {{ sale.grand_total|floatformat:2 }}</span></div>
+    <div class="receipt-total-row"><span>Paid Amount</span><span style="color:var(--success-green);font-weight:700;">PKR {{ sale.paid_amount|floatformat:2 }}</span></div>
+    {% if sale.change_amount > 0 %}
+    <div class="receipt-total-row" style="color:var(--success-green);font-weight:700;"><span>Change</span><span>PKR {{ sale.change_amount|floatformat:2 }}</span></div>
+    {% else %}
+    <div class="receipt-total-row" style="color:{% if sale.balance_amount > 0 %}var(--danger-red){% else %}var(--success-green){% endif %};font-weight:700;">
+      <span>Remaining Balance</span><span>PKR {{ sale.balance_amount|floatformat:2 }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Footer -->
+  <div class="receipt-footer">
+    <div>Thank you for shopping with us!</div>
+    <div class="receipt-slogan">"{{ business.receipt_footer_message }}"</div>
+    <div style="margin-top:12px;font-size:0.68rem;color:#C0B89A;">Developed by Ali Hassan</div>
+  </div>
+</div>
+{% endblock %}

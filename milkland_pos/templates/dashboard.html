@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load app_filters %}
+{% block title %}Dashboard{% endblock %}
+{% block navbar_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="mb-0">Dashboard</h1>
+    <p class="text-muted mb-0" style="font-size:0.85rem;">Overview of today's business activity.</p>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'sales:pos' %}" class="btn btn-success btn-sm"><i class="bi bi-cash-register me-1"></i>Open POS</a>
+    <a href="{% url 'purchases:add' %}" class="btn btn-gold btn-sm"><i class="bi bi-truck me-1"></i>Add Purchase</a>
+  </div>
+</div>
+
+<!-- Top 4 Stat Cards -->
+<div class="row g-3 mb-3">
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="dash-stat-label">Today's Sales</span>
+        <span class="dash-stat-icon"><i class="bi bi-credit-card"></i></span>
+      </div>
+      <div class="dash-stat-value">PKR {{ today_sales_total|floatformat:0 }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="dash-stat-label">Today's Orders</span>
+        <span class="dash-stat-icon"><i class="bi bi-bag-check"></i></span>
+      </div>
+      <div class="dash-stat-value">{{ today_orders_count }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="dash-stat-label">Today's Profit</span>
+        <span class="dash-stat-icon"><i class="bi bi-graph-up-arrow"></i></span>
+      </div>
+      <div class="dash-stat-value {% if today_profit < 0 %}text-danger{% endif %}">PKR {{ today_profit|floatformat:0 }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card {% if low_stock_count > 0 %}dash-stat-card-warn{% endif %}">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="dash-stat-label">Low Stock Items</span>
+        <span class="dash-stat-icon {% if low_stock_count > 0 %}text-danger{% endif %}"><i class="bi bi-exclamation-triangle"></i></span>
+      </div>
+      <div class="dash-stat-value {% if low_stock_count > 0 %}text-danger{% endif %}">{{ low_stock_count }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Second Row: Financial Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="dash-stat-label">Pending Receivables (Customers)</span>
+        <span class="dash-stat-icon"><i class="bi bi-people"></i></span>
+      </div>
+      <div class="dash-stat-value">PKR {{ customer_receivable|floatformat:0 }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="dash-stat-label">Pending Payables (Suppliers)</span>
+        <span class="dash-stat-icon"><i class="bi bi-building"></i></span>
+      </div>
+      <div class="dash-stat-value">PKR {{ total_supplier_payable|floatformat:0 }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="dash-stat-label">Today's Expenses</span>
+        <span class="dash-stat-icon"><i class="bi bi-cash-coin"></i></span>
+      </div>
+      <div class="dash-stat-value">PKR {{ today_expenses_total|floatformat:0 }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="dash-stat-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="dash-stat-label">Stock Value</span>
+        <span class="dash-stat-icon"><i class="bi bi-box-seam"></i></span>
+      </div>
+      <div class="dash-stat-value">PKR {{ total_stock_value|floatformat:0 }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card mb-4">
+  <div class="card-header">
+    <h6 class="mb-0"><i class="bi bi-lightning-charge-fill me-2 text-gold"></i>Quick Actions</h6>
+  </div>
+  <div class="card-body p-3">
+    <div class="row g-2">
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'sales:pos' %}" class="dash-action-btn">
+          <i class="bi bi-cash-register"></i>
+          <span>Open POS</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'sales:list' %}" class="dash-action-btn">
+          <i class="bi bi-receipt"></i>
+          <span>All Sales</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'purchases:add' %}" class="dash-action-btn">
+          <i class="bi bi-truck"></i>
+          <span>Add Purchase</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'purchases:list' %}" class="dash-action-btn">
+          <i class="bi bi-clipboard-check"></i>
+          <span>All Purchases</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'finance:customer_payment' %}" class="dash-action-btn">
+          <i class="bi bi-wallet2"></i>
+          <span>Receive Payment</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'finance:supplier_payment' %}" class="dash-action-btn">
+          <i class="bi bi-bank"></i>
+          <span>Pay Supplier</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'finance:expense_add' %}" class="dash-action-btn">
+          <i class="bi bi-cash-coin"></i>
+          <span>Add Expense</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'products:add' %}" class="dash-action-btn">
+          <i class="bi bi-plus-circle"></i>
+          <span>Add Product</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'parties:customer_add' %}" class="dash-action-btn">
+          <i class="bi bi-person-plus"></i>
+          <span>Add Customer</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'parties:supplier_add' %}" class="dash-action-btn">
+          <i class="bi bi-building-add"></i>
+          <span>Add Supplier</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'finance:wastage_add' %}" class="dash-action-btn">
+          <i class="bi bi-trash3"></i>
+          <span>Add Wastage</span>
+        </a>
+      </div>
+      <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+        <a href="{% url 'reports:dashboard' %}" class="dash-action-btn">
+          <i class="bi bi-bar-chart-line"></i>
+          <span>Reports</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts + Top Products -->
+<div class="row g-4">
+  <!-- Sales & Profit Chart -->
+  <div class="col-lg-8">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-graph-up me-2 text-gold"></i>Sales (Last 7 Days)</h6>
+        <div class="d-flex gap-3 align-items-center" style="font-size:0.75rem;">
+          <span class="d-flex align-items-center gap-1">
+            <span style="display:inline-block;width:14px;height:3px;background:#C9A24A;border-radius:2px;"></span>
+            <span class="text-muted">Sales</span>
+          </span>
+          <span class="d-flex align-items-center gap-1">
+            <span style="display:inline-block;width:14px;height:3px;background:#2E8B57;border-radius:2px;"></span>
+            <span class="text-muted">Profit</span>
+          </span>
+        </div>
+      </div>
+      <div class="card-body">
+        <canvas id="salesChart" style="max-height:270px;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Products -->
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header">
+        <h6 class="mb-0"><i class="bi bi-trophy me-2 text-gold"></i>Top Products</h6>
+        <div class="text-muted" style="font-size:0.72rem;">Last 7 days by revenue</div>
+      </div>
+      <div class="card-body p-0">
+        {% if top_products %}
+          {% for p in top_products %}
+          <div class="d-flex align-items-center justify-content-between px-3 py-2{% if not forloop.last %} border-bottom{% endif %}">
+            <div class="d-flex align-items-center gap-2">
+              <div class="top-product-icon">
+                <i class="bi bi-box2 text-gold"></i>
+              </div>
+              <div>
+                <div style="font-size:0.83rem;font-weight:600;color:var(--text-dark);">{{ p.product__name }}</div>
+                <div style="font-size:0.72rem;color:var(--text-light);">{{ p.qty }} units sold</div>
+              </div>
+            </div>
+            <div style="font-size:0.83rem;font-weight:700;color:var(--text-dark);">PKR {{ p.revenue|floatformat:0 }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-5 text-muted">
+            <i class="bi bi-box-seam d-block mb-2" style="font-size:2rem;opacity:0.25;"></i>
+            <span style="font-size:0.85rem;">No sales this week</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+  const labels = {{ chart_labels|safe }};
+  const salesData = {{ chart_sales|safe }};
+  const profitData = {{ chart_profit|safe }};
+
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Sales (PKR)',
+          data: salesData,
+          borderColor: '#C9A24A',
+          backgroundColor: 'rgba(201,162,74,0.07)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#C9A24A',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: true,
+          tension: 0.4,
+        },
+        {
+          label: 'Profit (PKR)',
+          data: profitData,
+          borderColor: '#2E8B57',
+          backgroundColor: 'rgba(46,139,87,0.06)',
+          borderWidth: 2,
+          pointBackgroundColor: '#2E8B57',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+          fill: true,
+          tension: 0.4,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#111827',
+          titleColor: '#fff',
+          bodyColor: 'rgba(255,255,255,0.82)',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            label: function(ctx) {
+              return ' ' + ctx.dataset.label + ': PKR ' + ctx.parsed.y.toLocaleString();
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+          ticks: { font: { size: 11 }, color: '#9CA3AF' }
+        },
+        y: {
+          grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+          ticks: {
+            font: { size: 11 },
+            color: '#9CA3AF',
+            callback: function(v) {
+              if (v >= 1000) return 'Rs ' + (v / 1000).toFixed(1) + 'k';
+              return 'Rs ' + v;
+            }
+          },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}
